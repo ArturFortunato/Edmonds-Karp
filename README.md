@@ -6,7 +6,7 @@ Compile
 
   Linux
     
-      g++ -Wall -pedantic edmonds-karp.c++
+      g++ -Wall -pedantic edmonds-karp.cpp
      
 Run
 
