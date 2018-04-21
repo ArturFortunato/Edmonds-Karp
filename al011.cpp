@@ -9,15 +9,11 @@ using namespace std;
 
 class Node {
 	public:
-		Node *left;
-		Node *right;
-		Node *top;
-		Node *bottom;
+		//Bottom, Left, Up, Right
+		Node **connections;
+		int id;
+		int *weight;
 		char type;
-		int wLeft;
-		int wRight;
-		int wTop;
-		int wBottom;
 		int lp; 
 		int cp;
 };
@@ -26,7 +22,46 @@ class Node {
 
 int m, n;
 vector<vector<Node *> *> *nodes;
+bool *inStack;
 
+void printNode(int linha, int coluna) {
+	Node *node = nodes -> at(linha) -> at(coluna);
+	printf("\nNode %d %d\n", linha, coluna);
+	printf("lp: %d\ncp:%d\n", node -> lp, node -> cp);
+	for(int i = 0; i < 4; i++)
+		if(node -> connections[i] == NULL) {
+			if(i == 0)
+				printf("Para baixo e nulo %d\n", i);
+			else if (i == 1)	
+				printf("Para a esquerda e nulo %d\n", i);
+			else if (i == 2)
+				printf("Para cima e nulo %d\n", i);
+			else
+				printf("Para a direita e nulo %d\n", i);
+			}
+	printf("\n-------\n");
+}
+
+void dfs(int linha, int coluna) {
+	int i;
+	printf("Estou em %d %d\n", linha, coluna);
+	inStack[linha * n + coluna] = true;
+	Node *node = nodes -> at(linha) -> at(coluna);
+	for(i = 0; i < 4; i++) {
+		if(node -> connections[i] != NULL) {
+			if(i == 0 && !inStack[(linha + 1) * n + coluna])
+				dfs(linha + 1, coluna);
+			else if (i == 1 && !inStack[linha * n + coluna - 1])
+				dfs(linha, coluna - 1);
+			else if(i == 2 && !inStack[(linha - 1) * n + coluna])
+				dfs(linha - 1, coluna);
+			else if (i == 3 && !inStack[linha * n + coluna + 1])
+				dfs(linha, coluna + 1);
+		}
+	}
+	printf("Acabei %d %d\n", linha, coluna);
+	inStack[linha * n + coluna] = false;
+}
 
 int main() {
 	int i, j, temp;
@@ -37,18 +72,25 @@ int main() {
 	}
 
 	nodes = new vector<vector<Node *> *>();
+	inStack = new bool[m * n]();
 
-	vector<Node *> *l = new vector<Node *>();
+	vector<Node *> *l;
 	Node *node;
-	
-	for(i = 0; i < m; i++)
-		nodes -> push_back(l);
 
-	for (i = 0; i < m; i++)
+	for(i = 0; i < m; i++) {
+		l = new vector<Node *>();
+		nodes -> push_back(l);
+	}
+
+	for (i = 0; i < m; i++) {
 		for (j = 0; j < n; j++) {
 			node = new Node();
+			node -> connections = new Node *[4];
+			node -> weight = new int[4]();
+			node -> id = 
 			nodes -> at(i) -> push_back(node);
 		}
+	}
 
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n; j++)
@@ -61,16 +103,23 @@ int main() {
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n - 1; j++) {
 			scanf("%d", &temp);	
-			nodes -> at(i) -> at(j) -> wRight = temp;
-			nodes -> at(i) -> at(j + 1) -> wLeft = temp;
+			nodes -> at(i) -> at(j) -> weight[3] = temp;
+			nodes -> at(i) -> at(j) -> connections[3] = nodes -> at(i) -> at(j + 1);
+			nodes -> at(i) -> at(j + 1) -> weight[1] = temp;
+			nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
 		}
 
 	for (i = 0; i < m - 1; i++)
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);	
-			nodes -> at(i) -> at(j) -> wBottom = temp;
-			nodes -> at(i + 1) -> at(j) -> wTop = temp;
+			nodes -> at(i) -> at(j) -> weight[0] = temp;
+			nodes -> at(i) -> at(j) -> connections[0] = nodes -> at(i + 1) -> at(j);
+			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
+			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
-	printf("%d", nodes -> at(1) -> at(0) -> wRight);
+	dfs(0, 0);
+	/*for (i = 0; i< m; i++)
+		for (j = 0; j < n; j++)
+			printNode(i, j);*/
 	return 0;
 }
