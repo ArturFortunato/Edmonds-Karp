@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
+#include <queue>
 
 using namespace std;
 
@@ -16,6 +17,9 @@ class Node {
 		char type;
 		int lp; 
 		int cp;
+		Node* parent;
+		int colour;
+		int distance;
 };
 
 // Global variables
@@ -23,6 +27,7 @@ class Node {
 int m, n;
 vector<vector<Node *> *> *nodes;
 bool *inStack;
+queue<Node *> Q;
 
 void printNode(int linha, int coluna) {
 	Node *node = nodes -> at(linha) -> at(coluna);
@@ -42,25 +47,22 @@ void printNode(int linha, int coluna) {
 	printf("\n-------\n");
 }
 
-void dfs(int linha, int coluna) {
-	int i;
-	printf("Estou em %d %d\n", linha, coluna);
-	inStack[linha * n + coluna] = true;
-	Node *node = nodes -> at(linha) -> at(coluna);
-	for(i = 0; i < 4; i++) {
-		if(node -> connections[i] != NULL) {
-			if(i == 0 && !inStack[(linha + 1) * n + coluna])
-				dfs(linha + 1, coluna);
-			else if (i == 1 && !inStack[linha * n + coluna - 1])
-				dfs(linha, coluna - 1);
-			else if(i == 2 && !inStack[(linha - 1) * n + coluna])
-				dfs(linha - 1, coluna);
-			else if (i == 3 && !inStack[linha * n + coluna + 1])
-				dfs(linha, coluna + 1);
-		}
+void bfs(Node* current){
+	Node *u = new Node();
+	if(current -> colour != 2){
+		current -> colour = 1;
 	}
-	printf("Acabei %d %d\n", linha, coluna);
-	inStack[linha * n + coluna] = false;
+	while(!Q.empty()){
+		u = Q.pop();
+		for(int i = 0; i < ; i++){
+			if(n -> colour == 0){
+				n -> colour = 1;
+				n -> distance = u -> distance + 1;
+				n -> parent = u;
+			}
+		}
+		n -> colour = 2;
+	}
 }
 
 int main() {
@@ -117,7 +119,6 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
-	dfs(0, 0);
 	/*for (i = 0; i< m; i++)
 		for (j = 0; j < n; j++)
 			printNode(i, j);*/
