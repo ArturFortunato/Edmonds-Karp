@@ -53,7 +53,8 @@ void bfs(Node* current){
 		current -> colour = 1;
 	}
 	while(!Q.empty()){
-		u = Q.pop();
+		u = Q.front();
+		Q.pop();
 		for(int i = 0; i < ; i++){
 			if(n -> colour == 0){
 				n -> colour = 1;
