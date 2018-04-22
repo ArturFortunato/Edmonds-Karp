@@ -15,7 +15,7 @@ class Node {
 		Node **connections;
 		int id;
 		int *weight;
-
+		int *currFlow;
 		//0 -> background 1 -> foreground
 		int type;
 		int lp; 
@@ -96,6 +96,7 @@ int main() {
 			node -> id = i * n + j;
 			node -> distance = 0;
 			node -> color = 0;
+			node -> currFlow = new int[6];
 			nodes -> at(i) -> push_back(node);
 			Q.push(node);
 		}
