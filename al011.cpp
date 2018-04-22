@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <queue>
+#include <unistd.h>
 
 using namespace std;
 
@@ -10,15 +11,17 @@ using namespace std;
 
 class Node {
 	public:
-		//Bottom, Left, Up, Right
+		//Bottom, Left, Up, Right, s, t
 		Node **connections;
 		int id;
 		int *weight;
-		char type;
+
+		//0 -> background 1 -> foreground
+		int type;
 		int lp; 
 		int cp;
 		Node* parent;
-		int colour;
+		int color;
 		int distance;
 };
 
@@ -28,12 +31,14 @@ int m, n;
 vector<vector<Node *> *> *nodes;
 bool *inStack;
 queue<Node *> Q;
+Node *s = new Node();
+Node *t = new Node();
 
 void printNode(int linha, int coluna) {
 	Node *node = nodes -> at(linha) -> at(coluna);
 	printf("\nNode %d %d\n", linha, coluna);
 	printf("lp: %d\ncp:%d\n", node -> lp, node -> cp);
-	for(int i = 0; i < 4; i++)
+	for(int i = 0; i < 6; i++)
 		if(node -> connections[i] == NULL) {
 			if(i == 0)
 				printf("Para baixo e nulo %d\n", i);
@@ -47,28 +52,33 @@ void printNode(int linha, int coluna) {
 	printf("\n-------\n");
 }
 
-void bfs(Node* current){
-	Node *u = new Node();
-	if(current -> colour != 2){
-		current -> colour = 1;
-	}
+void bfs(Node *current){
+	Node *u;
+	Node *n;
+	if(current -> color != 2)
+		current -> color = 1;
 	while(!Q.empty()){
 		u = Q.front();
 		Q.pop();
-		for(int i = 0; i < ; i++){
-			if(n -> colour == 0){
-				n -> colour = 1;
+		printf("%d------%d\n", u -> id, (int) Q.size());
+		for(int i = 0; i < 4; i++){
+			printf("%d\n", i);
+			if((n = u -> connections[i]) != NULL && n -> color == 0){
+				printf("if\n");
+				n -> color = 1;
 				n -> distance = u -> distance + 1;
 				n -> parent = u;
 			}
+			else
+				printf("else\n");
 		}
-		n -> colour = 2;
 	}
 }
 
 int main() {
 	int i, j, temp;
 	scanf("%d %d\n", &m, &n);
+
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
 		exit(0);
@@ -80,6 +90,9 @@ int main() {
 	vector<Node *> *l;
 	Node *node;
 
+	s -> connections = new Node *[m * n];
+	t -> connections = new Node *[m * n];
+
 	for(i = 0; i < m; i++) {
 		l = new vector<Node *>();
 		nodes -> push_back(l);
@@ -88,10 +101,15 @@ int main() {
 	for (i = 0; i < m; i++) {
 		for (j = 0; j < n; j++) {
 			node = new Node();
-			node -> connections = new Node *[4];
-			node -> weight = new int[4]();
-			node -> id = 
+			node -> connections = new Node *[6];
+			node -> weight = new int[6]();
+			node -> connections[4] = s;
+			node -> connections[5] = t;
+			node -> id = i * n + j;
+			node -> distance = 0;
+			node -> color = 0;
 			nodes -> at(i) -> push_back(node);
+			Q.push(node);
 		}
 	}
 
@@ -120,6 +138,7 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
+	bfs(nodes -> at(0) -> at(0));
 	/*for (i = 0; i< m; i++)
 		for (j = 0; j < n; j++)
 			printNode(i, j);*/
