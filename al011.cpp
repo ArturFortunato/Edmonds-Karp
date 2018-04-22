@@ -38,39 +38,27 @@ void printNode(int linha, int coluna) {
 	Node *node = nodes -> at(linha) -> at(coluna);
 	printf("\nNode %d %d\n", linha, coluna);
 	printf("lp: %d\ncp:%d\n", node -> lp, node -> cp);
-	for(int i = 0; i < 6; i++)
-		if(node -> connections[i] == NULL) {
-			if(i == 0)
-				printf("Para baixo e nulo %d\n", i);
-			else if (i == 1)	
-				printf("Para a esquerda e nulo %d\n", i);
-			else if (i == 2)
-				printf("Para cima e nulo %d\n", i);
-			else
-				printf("Para a direita e nulo %d\n", i);
-			}
+	printf("id: %d\ncolor: %d\ndistance: %d\n", node -> id, node -> color, node -> distance);
 	printf("\n-------\n");
 }
 
 void bfs(Node *current){
 	Node *u;
 	Node *n;
-	if(current -> color != 2)
-		current -> color = 1;
+
 	while(!Q.empty()){
 		u = Q.front();
 		Q.pop();
-		printf("%d------%d\n", u -> id, (int) Q.size());
-		for(int i = 0; i < 4; i++){
-			printf("%d\n", i);
-			if((n = u -> connections[i]) != NULL && n -> color == 0){
-				printf("if\n");
-				n -> color = 1;
-				n -> distance = u -> distance + 1;
-				n -> parent = u;
+		if (u -> color != 2) {
+			for(int i = 0; i < 4; i++){
+				n = u -> connections[i];
+				if(n != NULL && n -> color == 0){
+					n -> color = 1;
+					n -> distance = u -> distance + 1;
+					n -> parent = u;
+				}
 			}
-			else
-				printf("else\n");
+			u -> color = 2;
 		}
 	}
 }
