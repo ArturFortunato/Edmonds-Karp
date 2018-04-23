@@ -48,8 +48,9 @@ void createPath(){
 	while(n != s) {
 	    if(flow == -1)
 			flow = n -> daddy -> weight[4] - n -> daddy -> currFlow[4];
-		else
+		else {
 			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
+		}
 		paths -> insert(paths -> begin(), n);
 		n = n -> daddy;
 	}
@@ -64,16 +65,16 @@ void createPath(){
 				n -> daddy -> currFlow[n -> parent + 2] += flow;
 			else if  (n -> parent == 2 || n -> parent == 3)
 				n -> daddy -> currFlow[n -> parent - 2] += flow;
-			else
-				n -> daddy -> currFlow[5] += flow;
+			else 
+				s -> currFlow[n -> id] += flow;
 			if(n -> currFlow[n -> parent] == n -> weight[n -> parent])
 				cut -> push_back(make_pair(n -> id, n -> parent));
 		}
 		else
 			paths -> at(paths -> size() - 1) -> currFlow[4] += flow;
 	}
-	printf("%d\n", flowTotal);
 	flowTotal += flow;
+	printf("%d %d %d\n", s -> currFlow[0], nodes -> at(0) -> at(0) -> currFlow[5], nodes -> at(0) -> at(0) -> currFlow[4]);
 }
 
 
@@ -138,6 +139,9 @@ int main() {
 	s -> type = -1;
 	Q -> push(s);
 
+	for (i = 0; i < m * n; i++)
+		s -> currFlow[i] = 0;
+
 	t -> lp = 0;
 	t -> cp = 0;
 	t -> id = -2;
@@ -151,13 +155,15 @@ int main() {
 		for (j = 0; j < n; j++) {
 			node = new Node();
 			node -> connections = new Node *[6];
-			for(k = 0; k < 6; k++)
+			node -> currFlow = new int[6];
+			for(k = 0; k < 6; k++) {
 				node -> connections[k] = NULL;
+				node -> currFlow[k] = 0;
+			}
 			node -> weight = new int[6]();
 			node -> connections[4] = t;
 			node -> connections[5] = s;
 			node -> id = i * n + j;
-			node -> currFlow = new int[6];
 			node -> color = 0;
 			node -> daddy = NULL;
 			node -> parent = -1;
@@ -171,6 +177,7 @@ int main() {
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);
 			nodes -> at(i) -> at(j) -> lp = temp;
+			nodes -> at(i) -> at(j) -> weight[5] = temp;
 			s -> weight[i * n + j] = temp;
 		}
 
@@ -179,6 +186,7 @@ int main() {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> cp = temp;
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
+			s -> weight[i * n + j] = temp;
 		}
 
 	for (i = 0; i < m; i++)
