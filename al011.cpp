@@ -51,24 +51,14 @@ void createPath(){
 	while(n != s) {
 	    if(flow == -1){
 			flow = n -> daddy -> weight[4] - n -> daddy -> currFlow[4];
-			printf("%d\n", flow);
 		}
 		else{
-		    printf("Tou aqui e o flow é %d\n", flow);
 			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
-			printf("Tou aqui e o flow h é %d\n", flow);
 		}
-		printf("Tou aqui\n");
 		paths -> insert(paths -> begin(), n);
-		printf("Tou aqui\n");
-		if(n == t)
-		    n = n -> daddy;
-		else
-		    n = n -> connections[n -> parent];
-		printf("resolvi");
+		n = n -> daddy;
 	}
 	while(paths -> size() != 0){
-	    printf("Cheguqie aqui\n");
 		n = paths -> at(paths -> size() - 1);
 		paths -> pop_back();
 		n -> currFlow[n -> parent] += flow;
@@ -84,6 +74,17 @@ void createPath(){
 	flowTotal += flow;
 }
 
+
+int getParentId(Node *n) {
+	Node *parent = n -> daddy;
+	int i;
+	for(i = 0; i < 4; i++) {
+		if(n -> connections[i] == parent)
+			return i;
+	}
+	return -1;
+}
+
 void bfs(){
 	Node *u;
 	Node *node; 
@@ -96,15 +97,10 @@ void bfs(){
 		else
 			 size = 5;
 		for(i = 0; i < size; i++) {
-			if((node = u -> connections[i]) != NULL && node -> color == 0) {
-				if(i == 0 || i == 1)
-					node -> parent = i + 2 ;
-				else if(i == 2 || i == 3)
-					node -> parent = i - 2;
-				else 
-					node -> parent = 4;
-				node -> color = 1;
+			if((node = u -> connections[i]) != NULL && node -> color == 0 && node != t) {
 				node -> daddy = u;
+				node -> parent = getParentId(node);
+				node -> color = 1;
 			}
 			if(node == t){
 			    node -> daddy = u;
