@@ -46,16 +46,29 @@ void printNode(int linha, int coluna) {
 
 void createPath(){
 	int flow = -1;
+	printf("%d\n", flow);
 	Node *n = t;
 	while(n != s) {
-		if(flow == -1)
+	    if(flow == -1){
 			flow = n -> daddy -> weight[4] - n -> daddy -> currFlow[4];
-		else 
+			printf("%d\n", flow);
+		}
+		else{
+		    printf("Tou aqui e o flow é %d\n", flow);
 			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
+			printf("Tou aqui e o flow h é %d\n", flow);
+		}
+		printf("Tou aqui\n");
 		paths -> insert(paths -> begin(), n);
-		n = n -> connections[n -> parent];
+		printf("Tou aqui\n");
+		if(n == t)
+		    n = n -> daddy;
+		else
+		    n = n -> connections[n -> parent];
+		printf("resolvi");
 	}
 	while(paths -> size() != 0){
+	    printf("Cheguqie aqui\n");
 		n = paths -> at(paths -> size() - 1);
 		paths -> pop_back();
 		n -> currFlow[n -> parent] += flow;
@@ -93,8 +106,10 @@ void bfs(){
 				node -> color = 1;
 				node -> daddy = u;
 			}
-			if(node == t)
+			if(node == t){
+			    node -> daddy = u;
 				createPath();
+			}
 		}
 		u -> color = 2;
 	}
