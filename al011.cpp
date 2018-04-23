@@ -32,7 +32,7 @@ int m = 0, n = 0, flowTotal = 0;
 vector<vector<Node *> *> *nodes;
 vector<Node *> *paths;
 vector<pair<int,int> > *cut;
-queue<Node *> Q;
+queue<Node *> *Q = new queue<Node *>();
 Node *s = new Node();
 Node *t = new Node();
 
@@ -75,15 +75,15 @@ void bfs(){
 	Node *u;
 	Node *node; 
 	int i, size;
-	while(!Q.empty()){
-		u = Q.front();
-		Q.pop();
+	while(!Q -> empty()){
+		u = Q -> front();
+		Q -> pop();
 		if (u == s)
 			size = m * n;
 		else
 			 size = 5;
 		for(i = 0; i < size; i++) {
-			if((node = u -> connections[i]) != NULL && node -> color == 0){
+			if((node = u -> connections[i]) != NULL && node -> color == 0) {
 				if(i == 0 || i == 1)
 					node -> parent = i + 2 ;
 				else if(i == 2 || i == 3)
@@ -101,7 +101,7 @@ void bfs(){
 }
 
 int main() {
-	int i = 0, j = 0, temp = 0;
+	int i = 0, j = 0, k = 0, temp = 0;
 	scanf("%d %d\n", &m, &n);
 
 	if (m < 1 || n < 1) {
@@ -111,6 +111,7 @@ int main() {
 
 	nodes = new vector<vector<Node *> *>();
 	paths = new vector<Node *>();
+	cut = new vector<pair<int,int> >();
 
 	Node *node;
 
@@ -122,8 +123,14 @@ int main() {
 	s -> color = 0;
 	s -> connections = new Node *[m * n];
 	s -> type = -1;
-	Q.push(s);
-	
+	Q -> push(s);
+
+	t -> lp = 0;
+	t -> cp = 0;
+	t -> id = -1;
+	t -> color = 0;
+	t -> type = -1;
+
 	for(i = 0; i < m; i++) 
 		nodes -> push_back(new vector<Node *>());
 
@@ -131,6 +138,8 @@ int main() {
 		for (j = 0; j < n; j++) {
 			node = new Node();
 			node -> connections = new Node *[6];
+			for(k = 0; k < 6; k++)
+				node -> connections[k] = NULL;
 			node -> weight = new int[6]();
 			node -> connections[4] = t;
 			node -> connections[5] = s;
@@ -141,7 +150,7 @@ int main() {
 			node -> parent = -1;
 			nodes -> at(i) -> push_back(node);
 			s -> connections[node -> id] = node;
-			Q.push(node);
+			Q -> push(node);
 		}
 	}
 
