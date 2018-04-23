@@ -16,20 +16,22 @@ class Node {
 		int id;
 		int *weight;
 		int *currFlow;
+
 		//0 -> background 1 -> foreground
 		int type;
 		int lp; 
 		int cp;
-		Node* parent;
+		int parent;
+		Node* daddy;
 		int color;
-		int distance;
 };
 
 // Global variables
 
-int m, n;
+int m = 0, n = 0, flowTotal = 0;
 vector<vector<Node *> *> *nodes;
-bool *inStack;
+vector<Node *> *paths;
+vector<pair<int,int> > *cut;
 queue<Node *> Q;
 Node *s = new Node();
 Node *t = new Node();
@@ -38,33 +40,68 @@ void printNode(int linha, int coluna) {
 	Node *node = nodes -> at(linha) -> at(coluna);
 	printf("\nNode %d %d\n", linha, coluna);
 	printf("lp: %d\ncp:%d\n", node -> lp, node -> cp);
-	printf("id: %d\ncolor: %d\ndistance: %d\n", node -> id, node -> color, node -> distance);
+	printf("id: %d\ncolor: %d\n", node -> id, node -> color);
 	printf("\n-------\n");
 }
 
-void bfs(Node *current){
-	Node *u;
-	Node *n;
+void createPath(){
+	int flow = -1;
+	Node *n = t;
+	while(n != s) {
+		if(flow == -1)
+			flow = n -> weight[n -> parent] - n -> currFlow[n -> parent];
+		else
+			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
+		paths -> insert(paths -> begin(), n);
+		n = n -> connections[n -> parent];
+	}
+	while(paths -> size() != 0){
+		n = paths -> at(paths -> size() - 1);
+		paths -> pop_back();
+		n -> currFlow[n -> parent] += flow;
+		if (n -> parent == 0 || n -> parent == 1)
+			n -> daddy -> currFlow[n -> parent + 2] += flow;
+		else if  (n -> parent == 2 || n -> parent == 3)
+			n -> daddy -> currFlow[n -> parent - 2] += flow;
+		else
+			n -> daddy -> currFlow[5] += flow;
+		if(n -> currFlow[n -> parent] == n -> weight[n -> parent])
+			cut -> push_back(make_pair(n -> id, n -> parent));
+	}
+	flowTotal += flow;
+}
 
+void bfs(){
+	Node *u;
+	Node *node; 
+	int i, size;
 	while(!Q.empty()){
 		u = Q.front();
 		Q.pop();
-		if (u -> color != 2) {
-			for(int i = 0; i < 4; i++){
-				n = u -> connections[i];
-				if(n != NULL && n -> color == 0){
-					n -> color = 1;
-					n -> distance = u -> distance + 1;
-					n -> parent = u;
-				}
+		if (u == s)
+			size = m * n;
+		else
+			 size = 5;
+		for(i = 0; i < size; i++) {
+			if((node = u -> connections[i]) != NULL && node -> color == 0){
+				if(i == 0 || i == 1)
+					node -> parent = i + 2 ;
+				else if(i == 2 || i == 3)
+					node -> parent = i - 2;
+				else 
+					node -> parent = 4;
+				node -> color = 1;
+				node -> daddy = u;
 			}
-			u -> color = 2;
+			//if(n == t)
+			//	createPath();
 		}
+		u -> color = 2;
 	}
 }
 
 int main() {
-	int i, j, temp;
+	int i = 0, j = 0, temp = 0;
 	scanf("%d %d\n", &m, &n);
 
 	if (m < 1 || n < 1) {
@@ -73,31 +110,37 @@ int main() {
 	}
 
 	nodes = new vector<vector<Node *> *>();
-	inStack = new bool[m * n]();
+	paths = new vector<Node *>();
 
-	vector<Node *> *l;
 	Node *node;
 
+	s -> lp = 0;
+	s -> cp = 0;
+	s -> weight = new int[m * n];
+	s -> currFlow = new int[m * n];
+	s -> id = -1;
+	s -> color = 0;
 	s -> connections = new Node *[m * n];
-	t -> connections = new Node *[m * n];
-
-	for(i = 0; i < m; i++) {
-		l = new vector<Node *>();
-		nodes -> push_back(l);
-	}
+	s -> type = -1;
+	Q.push(s);
+	
+	for(i = 0; i < m; i++) 
+		nodes -> push_back(new vector<Node *>());
 
 	for (i = 0; i < m; i++) {
 		for (j = 0; j < n; j++) {
 			node = new Node();
 			node -> connections = new Node *[6];
 			node -> weight = new int[6]();
-			node -> connections[4] = s;
-			node -> connections[5] = t;
+			node -> connections[4] = t;
+			node -> connections[5] = s;
 			node -> id = i * n + j;
-			node -> distance = 0;
-			node -> color = 0;
 			node -> currFlow = new int[6];
+			node -> color = 0;
+			node -> daddy = NULL;
+			node -> parent = -1;
 			nodes -> at(i) -> push_back(node);
+			s -> connections[node -> id] = node;
 			Q.push(node);
 		}
 	}
@@ -118,7 +161,6 @@ int main() {
 			nodes -> at(i) -> at(j + 1) -> weight[1] = temp;
 			nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
 		}
-
 	for (i = 0; i < m - 1; i++)
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);	
@@ -127,7 +169,7 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
-	bfs(nodes -> at(0) -> at(0));
+	bfs();
 	/*for (i = 0; i< m; i++)
 		for (j = 0; j < n; j++)
 			printNode(i, j);*/
