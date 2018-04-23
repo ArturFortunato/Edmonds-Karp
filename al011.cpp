@@ -38,39 +38,41 @@ Node *t = new Node();
 
 void printNode(int linha, int coluna) {
 	Node *node = nodes -> at(linha) -> at(coluna);
-	printf("\nNode %d %d\n", linha, coluna);
-	printf("lp: %d\ncp:%d\n", node -> lp, node -> cp);
-	printf("id: %d\ncolor: %d\n", node -> id, node -> color);
+	printf("\n(%d, %d): Parent %d", linha, coluna, node -> parent);
 	printf("\n-------\n");
 }
 
 void createPath(){
 	int flow = -1;
-	printf("%d\n", flow);
 	Node *n = t;
 	while(n != s) {
-	    if(flow == -1){
+	    if(flow == -1)
 			flow = n -> daddy -> weight[4] - n -> daddy -> currFlow[4];
-		}
-		else{
+		else
 			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
-		}
 		paths -> insert(paths -> begin(), n);
 		n = n -> daddy;
 	}
-	while(paths -> size() != 0){
+	paths -> insert(paths -> begin(), s);
+
+	while(paths -> size() != 1) {
 		n = paths -> at(paths -> size() - 1);
 		paths -> pop_back();
-		n -> currFlow[n -> parent] += flow;
-		if (n -> parent == 0 || n -> parent == 1)
-			n -> daddy -> currFlow[n -> parent + 2] += flow;
-		else if  (n -> parent == 2 || n -> parent == 3)
-			n -> daddy -> currFlow[n -> parent - 2] += flow;
+		if (n != t) {
+			n -> currFlow[n -> parent] += flow;
+			if (n -> parent == 0 || n -> parent == 1)
+				n -> daddy -> currFlow[n -> parent + 2] += flow;
+			else if  (n -> parent == 2 || n -> parent == 3)
+				n -> daddy -> currFlow[n -> parent - 2] += flow;
+			else
+				n -> daddy -> currFlow[5] += flow;
+			if(n -> currFlow[n -> parent] == n -> weight[n -> parent])
+				cut -> push_back(make_pair(n -> id, n -> parent));
+		}
 		else
-			n -> daddy -> currFlow[5] += flow;
-		if(n -> currFlow[n -> parent] == n -> weight[n -> parent])
-			cut -> push_back(make_pair(n -> id, n -> parent));
+			paths -> at(paths -> size() - 1) -> currFlow[4] += flow;
 	}
+	printf("%d\n", flowTotal);
 	flowTotal += flow;
 }
 
@@ -82,7 +84,7 @@ int getParentId(Node *n) {
 		if(n -> connections[i] == parent)
 			return i;
 	}
-	return -1;
+	return 5;
 }
 
 void bfs(){
