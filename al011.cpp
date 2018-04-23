@@ -11,7 +11,7 @@ using namespace std;
 
 class Node {
 	public:
-		//Bottom, Left, Up, Right, s, t
+		//Bottom, Left, Up, Right, t, s
 		Node **connections;
 		int id;
 		int *weight;
@@ -49,8 +49,8 @@ void createPath(){
 	Node *n = t;
 	while(n != s) {
 		if(flow == -1)
-			flow = n -> weight[n -> parent] - n -> currFlow[n -> parent];
-		else
+			flow = n -> daddy -> weight[4] - n -> daddy -> currFlow[4];
+		else 
 			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
 		paths -> insert(paths -> begin(), n);
 		n = n -> connections[n -> parent];
@@ -93,8 +93,8 @@ void bfs(){
 				node -> color = 1;
 				node -> daddy = u;
 			}
-			//if(n == t)
-			//	createPath();
+			if(node == t)
+				createPath();
 		}
 		u -> color = 2;
 	}
@@ -127,7 +127,7 @@ int main() {
 
 	t -> lp = 0;
 	t -> cp = 0;
-	t -> id = -1;
+	t -> id = -2;
 	t -> color = 0;
 	t -> type = -1;
 
@@ -155,12 +155,18 @@ int main() {
 	}
 
 	for (i = 0; i < m; i++)
-		for (j = 0; j < n; j++)
-			scanf("%d", &(nodes -> at(i) -> at(j) -> lp));
+		for (j = 0; j < n; j++) {
+			scanf("%d", &temp);
+			nodes -> at(i) -> at(j) -> lp = temp;
+			s -> weight[i * n + j] = temp;
+		}
 
 	for (i = 0; i < m; i++)
-		for (j = 0; j < n; j++)
-			scanf("%d", &(nodes -> at(i) -> at(j) -> cp));	
+		for (j = 0; j < n; j++) {
+			scanf("%d", &temp);	
+			nodes -> at(i) -> at(j) -> cp = temp;
+			nodes -> at(i) -> at(j) -> weight[4] = temp;
+		}
 
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n - 1; j++) {
