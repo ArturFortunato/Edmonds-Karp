@@ -54,6 +54,14 @@ int getParentId(Node *n) {
 	return 5;
 }
 
+int getChildId(Node *parent, Node *child) {
+	int i;
+	for (i = 0; i < 6; i++)
+		if (parent -> connections[i] == child)
+			return i;
+	return -1;
+}
+
 /*void createPath(){
 	int flow = -1;
 	Node *n = t;
@@ -131,7 +139,7 @@ void bfs() {
 		flows[i] = -1;
 
 	while(!Q -> empty()) {
-		printf("%d\n", Q -> front() -> id);
+		//printf("%d\n", Q -> front() -> id);
 		u = Q -> front();
 		Q -> pop();
 		if (u == s)
@@ -143,18 +151,27 @@ void bfs() {
 			if(node != NULL && node -> color == 0) {
 				node -> daddy = u;
 				node -> parent = getParentId(node);
-				if(flows[node -> id] == -1)
-					flows[node -> id] = u -> weight[i];
+				if (node -> daddy == s)
+					flows[node -> id] = s -> weight[node -> id] - s -> currFlow[node -> id];
 				else
-					flows[node -> id] = min(u -> weight[i] - u -> currFlow[i], flows[node -> id]);
+					flows[node -> id] = min(node -> daddy -> weight[i] - node -> daddy -> currFlow[i], flows[node -> daddy -> id]);
 				if(node != t) {
 					node -> color = 1;
-					Q -> push(node);
+					//Q -> push(node);
 				}
 				else {
 					flow = flows[node -> id];
+					printf("Vou somar %d\n", flow);
+					flowTotal += flow;
 					while (node != s) {
-						node -> currFlow[getParentId(node)] += flow;
+						if (node -> weight[getParentId(node)] - node -> currFlow[getParentId(node)] == flow) {
+							node -> connections[getParentId(node)] = NULL;
+							u -> connections[getChildId(u, node)] = NULL;
+						}
+						else {
+							node -> currFlow[getParentId(node)] += flow;
+							u -> weight[getChildId(u, node)] += flow;
+						}
 						flows[node -> id] = -1;
 						node = node -> daddy;
 					}
@@ -264,7 +281,7 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
 	bfs();
-	/*printf("%d\n", flowTotal);
-	for (i = 0; i < (int) cut -> size(); i++)
+	printf("%d\n", flowTotal);
+	/*for (i = 0; i < (int) cut -> size(); i++)
 		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);*/	return 0;
 }
