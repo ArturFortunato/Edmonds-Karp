@@ -45,6 +45,8 @@ void printNode(int linha, int coluna) {
 int getParentId(Node *n) {
 	Node *parent = n -> daddy;
 	int i;
+	if (n == t)
+		return 4;
 	for(i = 0; i < 4; i++) {
 		if(n -> connections[i] == parent)
 			return i;
@@ -120,9 +122,14 @@ void bfs(){
 }*/
 
 void bfs() {
-	int i, size, flow = -1;
+	int i, size;
 	Node *u;
 	Node *node;
+	int *flows = new int[m * n + 1];
+
+	for (i = 0; i <= m * n; i++)
+		flows[i] = -1;
+
 	while(!Q -> empty()) {
 		printf("%d\n", Q -> front() -> id);
 		u = Q -> front();
@@ -133,21 +140,27 @@ void bfs() {
 			size = 5;
 		for (i = 0; i < size; i++) {
 			node = u -> connections[i];
-			if (node != NULL)
-			if(node != NULL && node -> color == 0 && (node -> weight[i] - node -> currFlow[i] > 0)) {
+			if(node != NULL && node -> color == 0) {
 				node -> daddy = u;
 				node -> parent = getParentId(node);
-				node -> color = 1;
-				if(flow == -1)
-					flow = node -> weight[i];
-				else
-					flow = min(node -> weight[i] - node -> currFlow[i], flow);
-				if(node != t)
+				if(flows[node -> id] == -1) {
+					flows[node -> id] = node -> weight[i];
+					printf("flow novo: %d\n", flows[node -> id] );
+				}
+				else {
+					printf("%d %d\n", flows[node -> id],  min(node -> weight[i] - node -> currFlow[i], flows[node -> id]));
+					flows[node -> id] = min(node -> weight[i] - node -> currFlow[i], flows[node -> id]);
+					printf("%d\n", flows[node -> id]);
+				}
+				if(node != t) {
+					node -> color = 1;
 					Q -> push(node);
+				}
 				else {
 					while (node -> daddy != node) {
 						u = node -> daddy;
-						node -> currFlow[i] += flow;
+						node -> currFlow[i] += flows[node -> id];
+						flows[node -> id] = -1;
 						node = u;
 					}
 					break;
@@ -182,14 +195,19 @@ int main() {
 	s -> type = -1;
 	Q -> push(s);
 
-	for (i = 0; i < m * n; i++)
-		s -> currFlow[i] = 0;
-
 	t -> lp = 0;
 	t -> cp = 0;
-	t -> id = -2;
+	t -> id = m * n;
 	t -> color = 0;
 	t -> type = -1;
+	t-> connections = new Node *[m * n];
+	t -> weight = new int[m * n];
+	t -> currFlow = new int[m * n];
+
+	for (i = 0; i < m * n; i++) {
+		s -> currFlow[i] = 0;
+		t -> currFlow[i] = 0;
+	}
 
 	for(i = 0; i < m; i++) 
 		nodes -> push_back(new vector<Node *>());
@@ -212,6 +230,7 @@ int main() {
 			node -> parent = -1;
 			nodes -> at(i) -> push_back(node);
 			s -> connections[node -> id] = node;
+			t -> connections[node -> id] = node;
 			Q -> push(node);
 		}
 	}
@@ -229,6 +248,7 @@ int main() {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> cp = temp;
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
+			t -> weight[i * n + j] = temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -248,11 +268,8 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
-	//bfs();
+	bfs();
 	/*printf("%d\n", flowTotal);
 	for (i = 0; i < (int) cut -> size(); i++)
-		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);*/
-	for (i = 0; i < m * n; i++)
-		printf("%d: %d\n", i, s -> weight[i]);
-	return 0;
+		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);*/	return 0;
 }
