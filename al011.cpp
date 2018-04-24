@@ -130,7 +130,7 @@ void bfs(){
 }*/
 
 void bfs() {
-	int i, size, flow;
+	int i, size, flow, dad;
 	Node *u;
 	Node *node;
 	int *flows = new int[m * n + 1];
@@ -139,7 +139,6 @@ void bfs() {
 		flows[i] = -1;
 
 	while(!Q -> empty()) {
-		//printf("%d\n", Q -> front() -> id);
 		u = Q -> front();
 		Q -> pop();
 		if (u == s)
@@ -156,16 +155,18 @@ void bfs() {
 				else
 					flows[node -> id] = min(node -> daddy -> weight[i] - node -> daddy -> currFlow[i], flows[node -> daddy -> id]);
 				if(node != t) {
+					Q -> push(u);
 					node -> color = 1;
-					//Q -> push(node);
 				}
 				else {
 					flow = flows[node -> id];
-					printf("Vou somar %d\n", flow);
 					flowTotal += flow;
 					while (node != s) {
-						if (node -> weight[getParentId(node)] - node -> currFlow[getParentId(node)] == flow) {
-							node -> connections[getParentId(node)] = NULL;
+						printf("Node %d\n", node -> id);
+						dad = getParentId(node);
+						if (node -> weight[dad] - node -> currFlow[dad] == flow) {
+							printf("Rochaa-- %d %d\n", node -> id, dad);
+							node -> connections[dad] = NULL;
 							u -> connections[getChildId(u, node)] = NULL;
 						}
 						else {
@@ -251,34 +252,57 @@ int main() {
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);
 			nodes -> at(i) -> at(j) -> lp = temp;
-			nodes -> at(i) -> at(j) -> weight[5] = temp;
-			s -> weight[i * n + j] = temp;
+			if(temp != 0) {
+				nodes -> at(i) -> at(j) -> weight[5] = temp;
+				s -> weight[i * n + j] = temp;
+			}
+			else {
+				nodes -> at(i) -> at(j) -> connections[5] = NULL;
+				s -> connections[i * n + j] = NULL;
+			}
 		}
 
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> cp = temp;
-			nodes -> at(i) -> at(j) -> weight[4] = temp;
-			t -> weight[i * n + j] = temp;
+			if (temp != 0) {
+				nodes -> at(i) -> at(j) -> weight[4] = temp;
+				t -> weight[i * n + j] = temp;
+			}
+			else
+				nodes -> at(i) -> at(j) -> connections[4] = NULL;
+				t -> connections[i * n + j] = NULL;
 		}
 
 	for (i = 0; i < m; i++)
 		for (j = 0; j < n - 1; j++) {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> weight[3] = temp;
-			nodes -> at(i) -> at(j) -> connections[3] = nodes -> at(i) -> at(j + 1);
 			nodes -> at(i) -> at(j + 1) -> weight[1] = temp;
-			nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
+			if(temp != 0) {
+				nodes -> at(i) -> at(j) -> connections[3] = nodes -> at(i) -> at(j + 1);
+				nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
+			}
+			else {
+				nodes -> at(i) -> at(j) -> connections[3] = NULL;
+				nodes -> at(i) -> at(j + 1) -> connections[1] = NULL;
+			}
 		}
 
 	for (i = 0; i < m - 1; i++)
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> weight[0] = temp;
-			nodes -> at(i) -> at(j) -> connections[0] = nodes -> at(i + 1) -> at(j);
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
-			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
+			if (temp != 0) {
+				nodes -> at(i) -> at(j) -> connections[0] = nodes -> at(i + 1) -> at(j);
+				nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
+			}
+			else {
+				nodes -> at(i) -> at(j) -> connections[0] = NULL;
+				nodes -> at(i + 1) -> at(j) -> connections[2] = NULL;
+			}
 		}
 	bfs();
 	printf("%d\n", flowTotal);
