@@ -122,7 +122,7 @@ void bfs(){
 }*/
 
 void bfs() {
-	int i, size;
+	int i, size, flow;
 	Node *u;
 	Node *node;
 	int *flows = new int[m * n + 1];
@@ -143,25 +143,20 @@ void bfs() {
 			if(node != NULL && node -> color == 0) {
 				node -> daddy = u;
 				node -> parent = getParentId(node);
-				if(flows[node -> id] == -1) {
-					flows[node -> id] = node -> weight[i];
-					printf("flow novo: %d\n", flows[node -> id] );
-				}
-				else {
-					printf("%d %d\n", flows[node -> id],  min(node -> weight[i] - node -> currFlow[i], flows[node -> id]));
-					flows[node -> id] = min(node -> weight[i] - node -> currFlow[i], flows[node -> id]);
-					printf("%d\n", flows[node -> id]);
-				}
+				if(flows[node -> id] == -1)
+					flows[node -> id] = u -> weight[i];
+				else
+					flows[node -> id] = min(u -> weight[i] - u -> currFlow[i], flows[node -> id]);
 				if(node != t) {
 					node -> color = 1;
 					Q -> push(node);
 				}
 				else {
-					while (node -> daddy != node) {
-						u = node -> daddy;
-						node -> currFlow[i] += flows[node -> id];
+					flow = flows[node -> id];
+					while (node != s) {
+						node -> currFlow[getParentId(node)] += flow;
 						flows[node -> id] = -1;
-						node = u;
+						node = node -> daddy;
 					}
 					break;
 				}
