@@ -100,7 +100,7 @@ void bfs(){
 		else
 			 size = 5;
 		for(i = 0; i < size; i++) {
-			if((node = u -> connections[i]) != NULL && node -> color == 0 && node != t) {
+			if((node = u -> connections[i]) != NULL && node -> color == 0 && node -> weight[node -> parent] - node -> currFlow[node -> parent] > 0 && node =! t) {
 				node -> daddy = u;
 				node -> parent = getParentId(node);
 				node -> color = 1;
