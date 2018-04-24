@@ -55,7 +55,6 @@ void createPath(){
 		n = n -> daddy;
 	}
 	paths -> insert(paths -> begin(), s);
-
 	while(paths -> size() != 1) {
 		n = paths -> at(paths -> size() - 1);
 		paths -> pop_back();
@@ -68,13 +67,13 @@ void createPath(){
 			else 
 				s -> currFlow[n -> id] += flow;
 			if(n -> currFlow[n -> parent] == n -> weight[n -> parent])
-				cut -> push_back(make_pair(n -> id, n -> parent));
+				cut -> push_back(make_pair(n -> id, n -> daddy -> id));
 		}
 		else
 			paths -> at(paths -> size() - 1) -> currFlow[4] += flow;
 	}
+	paths -> pop_back();
 	flowTotal += flow;
-	printf("%d %d %d\n", s -> currFlow[0], nodes -> at(0) -> at(0) -> currFlow[5], nodes -> at(0) -> at(0) -> currFlow[4]);
 }
 
 
@@ -93,6 +92,7 @@ void bfs(){
 	Node *node; 
 	int i, size;
 	while(!Q -> empty()){
+		printf("asdjbh\n");
 		u = Q -> front();
 		Q -> pop();
 		if (u == s)
@@ -104,6 +104,7 @@ void bfs(){
 				node -> daddy = u;
 				node -> parent = getParentId(node);
 				node -> color = 1;
+				Q -> push(node);
 			}
 			if(node == t){
 			    node -> daddy = u;
@@ -206,8 +207,8 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
 	bfs();
-	/*for (i = 0; i< m; i++)
-		for (j = 0; j < n; j++)
-			printNode(i, j);*/
+	printf("%d\n", flowTotal);
+	for (i = 0; i < (int) cut -> size(); i++)
+		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);
 	return 0;
 }
