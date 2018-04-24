@@ -43,7 +43,6 @@ void printNode(int linha, int coluna) {
 }
 
 int getParentId(Node *n) {
-	printf("asdasd: %d\n", n -> id);
 	Node *parent = n -> daddy;
 	int i;
 	for(i = 0; i < 4; i++) {
@@ -125,7 +124,7 @@ void bfs() {
 	Node *u;
 	Node *node;
 	while(!Q -> empty()) {
-		printf("aasdasd\n");
+		printf("%d\n", Q -> front() -> id);
 		u = Q -> front();
 		Q -> pop();
 		if (u == s)
@@ -133,12 +132,9 @@ void bfs() {
 		else
 			size = 5;
 		for (i = 0; i < size; i++) {
-			printf("%d\n", i);
 			node = u -> connections[i];
 			if (node != NULL)
-				printf("weight: %d\n", node -> weight[i]);
 			if(node != NULL && node -> color == 0 && (node -> weight[i] - node -> currFlow[i] > 0)) {
-				printf("flow: %d\n", flow);
 				node -> daddy = u;
 				node -> parent = getParentId(node);
 				node -> color = 1;
@@ -156,10 +152,8 @@ void bfs() {
 					}
 					break;
 				}
-				printf("Sai\n");
 			}
 		}
-		printf("asdasdasdasdasdasd\n");
 	}
 }
 
@@ -235,7 +229,6 @@ int main() {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> cp = temp;
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
-			s -> weight[i * n + j] = temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -246,6 +239,7 @@ int main() {
 			nodes -> at(i) -> at(j + 1) -> weight[1] = temp;
 			nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
 		}
+
 	for (i = 0; i < m - 1; i++)
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);	
@@ -254,9 +248,11 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
-	bfs();
-	printf("%d\n", flowTotal);
+	//bfs();
+	/*printf("%d\n", flowTotal);
 	for (i = 0; i < (int) cut -> size(); i++)
-		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);
+		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);*/
+	for (i = 0; i < m * n; i++)
+		printf("%d: %d\n", i, s -> weight[i]);
 	return 0;
 }
