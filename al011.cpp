@@ -42,11 +42,23 @@ void printNode(int linha, int coluna) {
 	printf("\n-------\n");
 }
 
-void createPath(){
+int getParentId(Node *n) {
+	printf("asdasd: %d\n", n -> id);
+	Node *parent = n -> daddy;
+	int i;
+	for(i = 0; i < 4; i++) {
+		if(n -> connections[i] == parent)
+			return i;
+	}
+	return 5;
+}
+
+/*void createPath(){
 	int flow = -1;
 	Node *n = t;
+	printf("daddy do 0: %d\n", nodes -> at(0) -> at(0) -> daddy -> id );
 	while(n != s) {
-	    if(flow == -1)
+		if(flow == -1)
 			flow = n -> daddy -> weight[4] - n -> daddy -> currFlow[4];
 		else {
 			flow = min(n -> weight[n -> parent] - n -> currFlow[n -> parent], flow);
@@ -76,17 +88,6 @@ void createPath(){
 	flowTotal += flow;
 }
 
-
-int getParentId(Node *n) {
-	Node *parent = n -> daddy;
-	int i;
-	for(i = 0; i < 4; i++) {
-		if(n -> connections[i] == parent)
-			return i;
-	}
-	return 5;
-}
-
 void bfs(){
 	Node *u;
 	Node *node; 
@@ -95,23 +96,70 @@ void bfs(){
 		printf("asdjbh\n");
 		u = Q -> front();
 		Q -> pop();
+		printf("Agora vou verificar as ligacoes de %d\n", u -> id);
 		if (u == s)
 			size = m * n;
 		else
 			 size = 5;
 		for(i = 0; i < size; i++) {
-			if((node = u -> connections[i]) != NULL && node -> color == 0 && node -> weight[node -> parent] - node -> currFlow[node -> parent] > 0 && node =! t) {
+			if((node = u -> connections[i]) != NULL && node != t && node -> color == 0) {
+				printf("Dentro: %d\n", node -> id );
 				node -> daddy = u;
 				node -> parent = getParentId(node);
+				printf("%d\n",  node -> weight[node -> parent]);
 				node -> color = 1;
-				Q -> push(node);
+				if (node != t)
+					Q -> push(node);
 			}
-			if(node == t){
+			if(node == t) {
 			    node -> daddy = u;
 				createPath();
 			}
 		}
 		u -> color = 2;
+	}
+}*/
+
+void bfs() {
+	int i, size, flow = -1;
+	Node *u;
+	Node *node;
+	while(!Q -> empty()) {
+		printf("aasdasd\n");
+		u = Q -> front();
+		Q -> pop();
+		if (u == s)
+			size = m * n;
+		else
+			size = 5;
+		for (i = 0; i < size; i++) {
+			printf("%d\n", i);
+			node = u -> connections[i];
+			if (node != NULL)
+				printf("weight: %d\n", node -> weight[i]);
+			if(node != NULL && node -> color == 0 && (node -> weight[i] - node -> currFlow[i] > 0)) {
+				printf("flow: %d\n", flow);
+				node -> daddy = u;
+				node -> parent = getParentId(node);
+				node -> color = 1;
+				if(flow == -1)
+					flow = node -> weight[i];
+				else
+					flow = min(node -> weight[i] - node -> currFlow[i], flow);
+				if(node != t)
+					Q -> push(node);
+				else {
+					while (node -> daddy != node) {
+						u = node -> daddy;
+						node -> currFlow[i] += flow;
+						node = u;
+					}
+					break;
+				}
+				printf("Sai\n");
+			}
+		}
+		printf("asdasdasdasdasdasd\n");
 	}
 }
 
