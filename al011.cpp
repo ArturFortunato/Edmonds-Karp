@@ -130,14 +130,13 @@ void bfs(){
 }*/
 
 void bfs() {
-	int i, size, flow, dad;
+	int i, size, flow = 0, totalFlow = 0, dad;
 	Node *u;
 	Node *node;
 	int *flows = new int[m * n + 1];
 
 	for (i = 0; i <= m * n; i++)
 		flows[i] = -1;
-
 	while(!Q -> empty()) {
 		u = Q -> front();
 		Q -> pop();
@@ -161,7 +160,7 @@ void bfs() {
 				}
 				else {
 					flow = flows[node -> id];
-					flowTotal += flow;
+					totalFlow += flow;
 					while (node != s) {
 						dad = getParentId(node);
 						if (node -> weight[dad] - node -> currFlow[dad] == flow) {
@@ -180,12 +179,21 @@ void bfs() {
 			}
 		}
 	}
+	return totalFlow;
+}
+
+void edmundo(){
+	int currentFlow = 0;
+	while(true){
+		bfs();
+		if(currentFlow == 0) break;
+		else flowTotal += currentFlow;
+	}
 }
 
 int main() {
 	int i = 0, j = 0, k = 0, temp = 0;
 	scanf("%d %d\n", &m, &n);
-
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
 		exit(0);
@@ -277,8 +285,8 @@ int main() {
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
 			t -> weight[i * n + j] = temp;
 			if (temp == 0) {
-				nodes -> at(i) -> at(j) -> connections[4] = NULL;
-				t -> connections[i * n + j] = NULL;
+			nodes -> at(i) -> at(j) -> connections[4] = NULL;
+			t -> connections[i * n + j] = NULL;
 			}
 		}
 
@@ -312,7 +320,7 @@ int main() {
 			}
 		}
 	bfs();
-	printf("%d\n", flowTotal);
+	printf("O tamanho do corte e: %d\n", (int) cut -> size());
 	/*for (i = 0; i < (int) cut -> size(); i++)
 		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);*/	return 0;
 }
