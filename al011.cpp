@@ -155,17 +155,16 @@ void bfs() {
 				else
 					flows[node -> id] = min(node -> daddy -> weight[i] - node -> daddy -> currFlow[i], flows[node -> daddy -> id]);
 				if(node != t) {
-					Q -> push(u);
+					if (u != s)
+						Q -> push(u);
 					node -> color = 1;
 				}
 				else {
 					flow = flows[node -> id];
 					flowTotal += flow;
 					while (node != s) {
-						printf("Node %d\n", node -> id);
 						dad = getParentId(node);
 						if (node -> weight[dad] - node -> currFlow[dad] == flow) {
-							printf("Rochaa-- %d %d\n", node -> id, dad);
 							node -> connections[dad] = NULL;
 							u -> connections[getChildId(u, node)] = NULL;
 						}
@@ -190,6 +189,15 @@ int main() {
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
 		exit(0);
+	}
+	if(m == 1 && n == 1) {
+		int x, y;
+		scanf("%d\n%d", &x, &y);
+		if (x <= y)
+			printf("%d\n\nP \n", x);
+		else
+			printf("%d\n\nC \n", y);
+		return 0;
 	}
 
 	nodes = new vector<vector<Node *> *>();
@@ -266,13 +274,12 @@ int main() {
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> cp = temp;
-			if (temp != 0) {
-				nodes -> at(i) -> at(j) -> weight[4] = temp;
-				t -> weight[i * n + j] = temp;
-			}
-			else
+			nodes -> at(i) -> at(j) -> weight[4] = temp;
+			t -> weight[i * n + j] = temp;
+			if (temp == 0) {
 				nodes -> at(i) -> at(j) -> connections[4] = NULL;
 				t -> connections[i * n + j] = NULL;
+			}
 		}
 
 	for (i = 0; i < m; i++)
