@@ -42,12 +42,12 @@ void printNode(int linha, int coluna) {
 	printf("\n-------\n");
 }
 
-int getParentId(Node *n) {
+int getParentId(Node *n, int size) {
 	Node *parent = n -> daddy;
 	int i;
 	if (n == t)
 		return 4;
-	for(i = 0; i < 4; i++) {
+	for(i = 0; i < size; i++) {
 		if(n -> connections[i] == parent)
 			return i;
 	}
@@ -148,6 +148,66 @@ int bfs() {
 			node = u -> connections[i];
 			if(node != NULL && node -> color == 0) {
 				node -> daddy = u;
+				node -> parent = getParentId(node, size);
+				if (node -> daddy == s)
+					flows[node -> id] = s -> weight[node -> id] - s -> currFlow[node -> id];
+				else
+					flows[node -> id] = min(node -> daddy -> weight[i] - node -> daddy -> currFlow[i], flows[node -> daddy -> id]);
+				if(node != t) {
+					if (u != s)
+						Q -> push(u);
+					node -> color = 1;
+				}
+				else {
+					flow = flows[node -> id];
+					totalFlow += flow;
+					while (node != s) {
+						dad = getParentId(node, size);
+						printf("%d\n", node->id);
+						if (node -> weight[dad] - node -> currFlow[dad] == flow) {
+							printf("Õ dad e: %d\n", dad);
+							node -> connections[dad] = NULL;
+							u -> connections[getChildId(u, node)] = NULL;
+						}
+						else {
+							node -> currFlow[getParentId(node)] += flow;
+							u -> weight[getChildId(u, node)] += flow;
+						}
+						flows[node -> id] = -1;
+						node = node -> daddy;
+					}
+					for(i=0; i <= size; i++){
+						printf("%d %d\n", i/n, i%n);
+						nodes -> at(i/n) -> at(i%n) -> color = 0;
+					}
+					break;
+				}
+			}
+		}
+	}
+	return totalFlow;
+}
+
+
+/*int bfs() {
+	int i, size, flow = 0, totalFlow = 0, dad;
+	Node *u;
+	Node *node;
+	int *flows = new int[m * n + 1];
+
+	for (i = 0; i <= m * n; i++)
+		flows[i] = -1;
+	while(!Q -> empty()) {
+		u = Q -> front();
+		Q -> pop();
+		if (u == s)
+			size = m * n;
+		else
+			size = 5;
+		for (i = 0; i < size; i++) {
+			node = u -> connections[i];
+			if(node != NULL && node -> color == 0) {
+				node -> daddy = u;
 				node -> parent = getParentId(node);
 				if (node -> daddy == s)
 					flows[node -> id] = s -> weight[node -> id] - s -> currFlow[node -> id];
@@ -186,6 +246,9 @@ int bfs() {
 	}
 	return totalFlow;
 }
+*/
+
+
 
 void edmundo(){
 	int currentFlow = 0;
