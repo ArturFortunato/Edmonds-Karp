@@ -30,18 +30,10 @@ class Node {
 
 int m = 0, n = 0, flowTotal = 0;
 vector<vector<Node *> *> *nodes;
-vector<Node *> *paths;
-vector<pair<int,int> > *cut;
 queue<Node *> *Q = new queue<Node *>();
 queue<Node *> *QAux = new queue<Node *>();
 Node *s = new Node();
 Node *t = new Node();
-
-void printNode(int linha, int coluna) {
-	Node *node = nodes -> at(linha) -> at(coluna);
-	printf("\n(%d, %d): Parent %d", linha, coluna, node -> parent);
-	printf("\n-------\n");
-}
 
 int getParentId(Node *n) {
 	Node *parent = n -> daddy;
@@ -66,13 +58,10 @@ int getChildId(Node *parent, Node *child) {
 }
 
 int bfs() {
-	int i, size, flow = 0, totalFlow = 0;
+	int i, size, flow = 0, totalFlow = 0, contador=0;
 	Node *u;
 	Node *node;
-	int *flows = new int[m * n + 1];
 
-	for (i = 0; i <= m * n; i++)
-		flows[i] = -1;
 	while(!Q -> empty()) {
 		u = Q -> front();
 		Q -> pop();
@@ -83,41 +72,32 @@ int bfs() {
 				size = 5;
 			for (i = 0; i < size; i++) {
 				node = u -> connections[i];
-				if(node != NULL && node -> color == 0 && u -> daddy != node) {
+				if(node != NULL && node -> color == 0 &&  u -> daddy != node && u -> weight[i] != u -> currFlow[i]) {
 					node -> daddy = u;
 					node -> parent = getParentId(node);
-					if (node -> daddy == s)
-						flows[node -> id] = s -> weight[node -> id] - s -> currFlow[node -> id];
-					else
-						flows[node -> id] = min(node -> daddy -> weight[i] - node -> daddy -> currFlow[i], flows[node -> daddy -> id]);
 					if(node != t)
 						node -> color = 1;
 					else {
-						flow = flows[node -> id];
-						//printf("FLOW: %d\n", flow);
-						totalFlow += flow;
+						flow = node -> weight[node -> parent] - node -> currFlow[node -> parent];
 						while (node != s) {
-							//printf("No: %d Pai: %d parent: %d\n", node -> id, node -> daddy -> id, node -> parent);
-							if (node -> weight[node -> parent] - node -> currFlow[node -> parent] == flow) {
-								node -> connections[node -> parent] = NULL; 
-								node -> daddy -> connections[getChildId(node->daddy, node)] = NULL;
-								if(node -> id != m*n && node -> id != m*n+1 && node -> daddy -> id != m*n && node -> daddy -> id !=m*n+1)
-									printf("Node 1: %d\tNode 2: %d\n", node -> id, node -> daddy -> id);
-								//guardar aresta
-							}
-							node -> currFlow[node -> parent] += flow;
-							node -> daddy -> currFlow[getChildId(node->daddy, node)] += flow;
+							flow = min(flow, node -> weight[node -> parent] - node -> currFlow[node -> parent]);
 							node = node -> daddy;
 						}
-						for(i = 0; i < m * n; i++) {
+						node = t;
+						printf("FLOW: %d\n", flow);
+ 						while (node != s) {
+ 							printf("Node: %d\n", node -> id);
+							node -> currFlow[node -> parent] += flow;
+							node -> daddy -> currFlow[getChildId(node -> daddy, node)] += flow;
+							node = node -> daddy;
+							contador++;
+						}
+						printf("-------\n");
+						if(contador > 2)
+							totalFlow += flow;
+						contador = 0;
+						for(i = 0; i < m * n; i++) 
 							nodes -> at(i / n) -> at(i % n) -> color = 0;
-							nodes -> at(i / n) -> at(i % n) -> daddy = NULL;
-							nodes -> at(i / n) -> at(i % n) -> parent = -1;	
-						}
-						for(i = 0; i <= m * n; i++) {
-							flows[i] = -1;
-						}
-						break;
 					}
 				}
 			}
@@ -126,38 +106,53 @@ int bfs() {
 	return totalFlow;
 }
 
+void getCut(Node *node) {
+	Node *temp;
+	int i;
+	for(i = 0; i < 4; i++)
+		if ((temp = node -> connections[i]) != NULL && node -> weight[i] != node -> currFlow[i] && temp -> color != 2) {
+			temp -> color = 2;
+			temp -> type = 0;
+			getCut(temp);
+		}
+
+}
 
 void edmundo() {
-	int currentFlow = 0;
+	int currentFlow = 0, i;
+	for(i = 0; i < m * n; i++)
+		if(s -> connections[i] != NULL) {
+			if(s -> weight[i] > nodes -> at(i / n) -> at(i % n) -> weight[4]) {
+				s -> currFlow[i] += nodes -> at(i / n) -> at(i % n) -> weight[4];
+				nodes -> at(i / n) -> at(i % n) -> currFlow[4] =nodes -> at(i / n) -> at(i % n) -> weight[4];
+			}
+			else if (s -> weight[i] < nodes -> at(i / n) -> at(i % n) -> weight[4]){
+				nodes -> at(i / n) -> at(i % n) -> currFlow[4] += s -> weight[i];
+				s -> currFlow[i] = s -> weight[i];
+			}
+		}
+
 	while(true) {
 		*Q = *QAux;
 		currentFlow = bfs();
-		//printf("currentFlow no edmundo: %d\n", flowTotal);
+		for(i = 0; i < m*n; i++){
+			nodes -> at(i / n) -> at(i % n) -> daddy = NULL;
+			nodes -> at(i / n) -> at(i % n) -> parent = -1;
+		}
 		if(currentFlow == 0) break;
 		else flowTotal += currentFlow;
 	}
 }
 
 int main() {
-	int i = 0, j = 0, k = 0, temp = 0;
+	int i = 0, j = 0, k = 0, temp = 0, type0c = 0, type0p = 0;
 	scanf("%d %d\n", &m, &n);
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
 		exit(0);
 	}
-	if(m == 1 && n == 1) {
-		int x, y;
-		scanf("%d\n%d", &x, &y);
-		if (x <= y)
-			printf("%d\n\nP \n", x);
-		else
-			printf("%d\n\nC \n", y);
-		return 0;
-	}
 
 	nodes = new vector<vector<Node *> *>();
-	paths = new vector<Node *>();
-	cut = new vector<pair<int,int> >();
 
 	Node *node;
 
@@ -204,6 +199,7 @@ int main() {
 			node -> color = 0;
 			node -> daddy = NULL;
 			node -> parent = -1;
+			node -> type = 1;
 			nodes -> at(i) -> push_back(node);
 			s -> connections[node -> id] = node;
 			t -> connections[node -> id] = node;
@@ -215,14 +211,8 @@ int main() {
 		for (j = 0; j < n; j++) {
 			scanf("%d", &temp);
 			nodes -> at(i) -> at(j) -> lp = temp;
-			if(temp != 0) {
-				nodes -> at(i) -> at(j) -> weight[5] = temp;
-				s -> weight[i * n + j] = temp;
-			}
-			else {
-				nodes -> at(i) -> at(j) -> connections[5] = NULL;
-				s -> connections[i * n + j] = NULL;
-			}
+			nodes -> at(i) -> at(j) -> weight[5] = temp;
+			s -> weight[i * n + j] = temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -231,10 +221,6 @@ int main() {
 			nodes -> at(i) -> at(j) -> cp = temp;
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
 			t -> weight[i * n + j] = temp;
-			if (temp == 0) {
-				nodes -> at(i) -> at(j) -> connections[4] = NULL;
-				t -> connections[i * n + j] = NULL;
-			}
 		}
 
 	for (i = 0; i < m; i++)
@@ -242,15 +228,8 @@ int main() {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> weight[3] = temp;
 			nodes -> at(i) -> at(j + 1) -> weight[1] = temp;
-			if(temp != 0) {
-				nodes -> at(i) -> at(j) -> connections[3] = nodes -> at(i) -> at(j + 1);
-				nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
-			}
-			else {
-				printf("Node 1: %d\tNode 2: %d\n", nodes -> at(i) -> at(j) -> id, nodes -> at(i) -> at(j + 1) -> id );
-				nodes -> at(i) -> at(j) -> connections[3] = NULL;
-				nodes -> at(i) -> at(j + 1) -> connections[1] = NULL;
-			}
+			nodes -> at(i) -> at(j) -> connections[3] = nodes -> at(i) -> at(j + 1);
+			nodes -> at(i) -> at(j + 1) -> connections[1] = nodes -> at(i) -> at(j);
 		}
 
 	for (i = 0; i < m - 1; i++)
@@ -258,17 +237,33 @@ int main() {
 			scanf("%d", &temp);	
 			nodes -> at(i) -> at(j) -> weight[0] = temp;
 			nodes -> at(i + 1) -> at(j) -> weight[2] = temp;
-			if (temp != 0) {
-				nodes -> at(i) -> at(j) -> connections[0] = nodes -> at(i + 1) -> at(j);
-				nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
-			}
-			else{
-				nodes -> at(i) -> at(j) -> connections[0] = NULL;
-				nodes -> at(i + 1) -> at(j) -> connections[2] = NULL;
-			}
+			nodes -> at(i) -> at(j) -> connections[0] = nodes -> at(i + 1) -> at(j);
+			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
 	edmundo();
-	printf("\n%d\n", flowTotal);
-	/*for (i = 0; i < (int) cut -> size(); i++)
-		printf("%d-%d\n", cut -> at(i).first, cut -> at(i).second);*/	return 0;
+	getCut(nodes -> at(0) -> at(0));
+	for (i = 0; i < m; i++)
+		for(j = 0; j < n; j++) {
+			if (nodes -> at(i) -> at(j) -> type == 0) {
+				type0c += nodes -> at(i) -> at(j) -> cp;
+				type0p += nodes -> at(i) -> at(j) -> lp;
+			}
+			else {
+				type0c += nodes -> at(i) -> at(j) -> lp;
+				type0p += nodes -> at(i) -> at(j) -> cp;
+			}
+		}
+	printf("%d\n\n", flowTotal + min(type0p, type0c));
+	for(i = 0; i < m; i++){
+	    for(j = 0; j < n; j++){
+	        Node* node = nodes -> at(i) -> at(j);
+		    if(node -> type == 1 && type0c < type0p){
+			    printf("P ");
+		    }
+		    else
+			    printf("C ");
+	    }
+	    printf("\n");
+	}
+	return 0;
 }
