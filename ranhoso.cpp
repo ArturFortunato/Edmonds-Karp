@@ -107,10 +107,8 @@ int bfs() {
 
 void getCut(Node *node) {
 	Node *temp;
-	int i, size = 4;
-	if(node == s)
-		size = m * n;
-	for(i = 0; i < size; i++)
+	int i;
+	for(i = 0; i < 4; i++)
 		if ((temp = node -> connections[i]) != NULL && node -> weight[i] != node -> currFlow[i] && temp -> color != 2) {
 			temp -> color = 2;
 			temp -> type = 0;
@@ -142,8 +140,8 @@ void edmundo() {
 }
 
 int main() {
-	int i = 0, j = 0, k = 0, temp = 0, type0c = 0, type0p = 0, totalCP = 0, totalLP = 0;
-	char letra = 'C';
+	int i = 0, j = 0, k = 0, temp = 0;
+	string str = "";
 	scanf("%d %d\n", &m, &n);
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
@@ -210,7 +208,6 @@ int main() {
 			nodes -> at(i) -> at(j) -> lp = temp;
 			nodes -> at(i) -> at(j) -> weight[5] = temp;
 			s -> weight[i * n + j] = temp;
-			totalLP += temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -219,7 +216,6 @@ int main() {
 			nodes -> at(i) -> at(j) -> cp = temp;
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
 			t -> weight[i * n + j] = temp;
-			totalCP += temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -241,38 +237,20 @@ int main() {
 		}
 	edmundo();
 	getCut(s);
-	for (i = 0; i < m; i++)
-		for(j = 0; j < n; j++) {
-			if (nodes -> at(i) -> at(j) -> type == 0) {
-				type0c += nodes -> at(i) -> at(j) -> cp;
-				type0p += nodes -> at(i) -> at(j) -> lp;
-			}
-			else {
-				type0c += nodes -> at(i) -> at(j) -> lp;
-				type0p += nodes -> at(i) -> at(j) -> cp;
-			}
-		}
-	printf("%d\n\n", (min(type0p, type0c) < min(totalLP, totalCP)) ? flowTotal + min(min(type0p, type0c), min(totalLP, totalCP)):min(min(type0p, type0c), min(totalLP, totalCP)) );
-	if(min(totalCP, totalLP) > min(type0p, type0c)) {
-		for(i = 0; i < m; i++){
-		    for(j = 0; j < n; j++){
-	    	    Node* node = nodes -> at(i) -> at(j);
-		    	if(node -> type == 1 && type0c < type0p)
-			    	printf("P ");
-		   		else
-			    	printf("C ");
+	for(i = 0; i < m; i++){
+	    for(j = 0; j < n; j++){
+    	    Node* node = nodes -> at(i) -> at(j);
+	    	if(node -> type == 1) {
+	    		flowTotal += node -> lp;
+		    	str += "P ";
 	    	}
-	    	printf("\n");
-		}
+	   		else {
+	   			flowTotal += node -> cp;
+		    	str += "C ";
+	   		}
+    	}
+    str += "\n";
 	}
-	else {
-		if (totalLP < totalCP)
-			letra = 'P';
-		for(i = 0; i < m; i++){
-		    for(j = 0; j < n; j++)
-		    	printf("%c ", letra);
-	    	printf("\n");
-		}
-	}
+	printf("%d\n\n%s", flowTotal, str.c_str());
 	return 0;
 }
