@@ -140,7 +140,8 @@ void edmundo() {
 }
 
 int main() {
-	int i = 0, j = 0, k = 0, temp = 0, type0c = 0, type0p = 0;
+	int i = 0, j = 0, k = 0, temp = 0, type0c = 0, type0p = 0, totalCP = 0, totalLP = 0;
+	char letra = 'C';
 	scanf("%d %d\n", &m, &n);
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
@@ -207,6 +208,7 @@ int main() {
 			nodes -> at(i) -> at(j) -> lp = temp;
 			nodes -> at(i) -> at(j) -> weight[5] = temp;
 			s -> weight[i * n + j] = temp;
+			totalLP += temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -215,6 +217,7 @@ int main() {
 			nodes -> at(i) -> at(j) -> cp = temp;
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
 			t -> weight[i * n + j] = temp;
+			totalCP += temp;
 		}
 
 	for (i = 0; i < m; i++)
@@ -235,7 +238,7 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
 	edmundo();
-	getCut(nodes -> at(0) -> at(0));
+	getCut(s);
 	for (i = 0; i < m; i++)
 		for(j = 0; j < n; j++) {
 			if (nodes -> at(i) -> at(j) -> type == 0) {
@@ -247,17 +250,27 @@ int main() {
 				type0p += nodes -> at(i) -> at(j) -> cp;
 			}
 		}
-	printf("%d\n\n", flowTotal + min(type0p, type0c));
-	for(i = 0; i < m; i++){
-	    for(j = 0; j < n; j++){
-	        Node* node = nodes -> at(i) -> at(j);
-		    if(node -> type == 1 && type0c < type0p){
-			    printf("P ");
-		    }
-		    else
-			    printf("C ");
-	    }
-	    printf("\n");
+	printf("%d\n\n", (min(type0p, type0c) < min(totalLP, totalCP)) ? flowTotal + min(min(type0p, type0c), min(totalLP, totalCP)):min(min(type0p, type0c), min(totalLP, totalCP)) );
+	if(min(totalCP, totalLP) > min(type0p, type0c)) {
+		for(i = 0; i < m; i++){
+		    for(j = 0; j < n; j++){
+	    	    Node* node = nodes -> at(i) -> at(j);
+		    	if(node -> type == 1 && type0c < type0p)
+			    	printf("P ");
+		   		else
+			    	printf("C ");
+	    	}
+	    	printf("\n");
+		}
+	}
+	else {
+		if (totalLP < totalCP)
+			letra = 'P';
+		for(i = 0; i < m; i++){
+		    for(j = 0; j < n; j++)
+		    	printf("%c ", letra);
+	    	printf("\n");
+		}
 	}
 	return 0;
 }
