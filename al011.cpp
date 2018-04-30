@@ -58,46 +58,45 @@ int getChildId(Node *parent, Node *child) {
 }
 
 int bfs() {
-	int i, size, flow = 0, totalFlow = 0, contador=0;
 	Node *u;
 	Node *node;
-
-	while(!Q -> empty()) {
+	int i, flow = 0, totalFlow = 0, size;
+	while(Q -> size()) {
 		u = Q -> front();
 		Q -> pop();
-		if (u == s || u -> daddy != NULL) {
-			if (u == s)
-				size = m * n;
-			else
-				size = 5;
-			for (i = 0; i < size; i++) {
+		if (u == s)
+			size = m * n;
+		else
+			size = 5;
+		if(u == s || u -> daddy != NULL) {
+			for(i = 0; i < size; i++) {
 				node = u -> connections[i];
-				if(node != NULL && node -> color == 0 &&  u -> daddy != node && u -> weight[i] != u -> currFlow[i]) {
+				if (node != NULL && u -> weight[i] != u -> currFlow[i] && node -> color == 0 ) {
 					node -> daddy = u;
 					node -> parent = getParentId(node);
-					if(node != t)
-						node -> color = 1;
+					if (node != t) {
+						Q -> push(node);
+							node -> color = 1;
+					}
 					else {
-						flow = node -> weight[node -> parent] - node -> currFlow[node -> parent];
-						while (node != s) {
+						flow = node -> weight[u -> id] - node -> currFlow[u -> id];
+						while(node != s) {
 							flow = min(flow, node -> weight[node -> parent] - node -> currFlow[node -> parent]);
 							node = node -> daddy;
 						}
 						node = t;
-						printf("FLOW: %d\n", flow);
- 						while (node != s) {
- 							printf("Node: %d\n", node -> id);
+						totalFlow += flow;
+						while(node != s) {
 							node -> currFlow[node -> parent] += flow;
 							node -> daddy -> currFlow[getChildId(node -> daddy, node)] += flow;
 							node = node -> daddy;
-							contador++;
 						}
-						printf("-------\n");
-						if(contador > 2)
-							totalFlow += flow;
-						contador = 0;
-						for(i = 0; i < m * n; i++) 
+						*Q = *QAux;
+						for(i = 0; i < m*n; i++){
+							nodes -> at(i / n) -> at(i % n) -> daddy = NULL;
+							nodes -> at(i / n) -> at(i % n) -> parent = -1;
 							nodes -> at(i / n) -> at(i % n) -> color = 0;
+						}
 					}
 				}
 			}
@@ -135,10 +134,6 @@ void edmundo() {
 	while(true) {
 		*Q = *QAux;
 		currentFlow = bfs();
-		for(i = 0; i < m*n; i++){
-			nodes -> at(i / n) -> at(i % n) -> daddy = NULL;
-			nodes -> at(i / n) -> at(i % n) -> parent = -1;
-		}
 		if(currentFlow == 0) break;
 		else flowTotal += currentFlow;
 	}
@@ -203,7 +198,6 @@ int main() {
 			nodes -> at(i) -> push_back(node);
 			s -> connections[node -> id] = node;
 			t -> connections[node -> id] = node;
-			QAux -> push (node);
 		}
 	}
 
