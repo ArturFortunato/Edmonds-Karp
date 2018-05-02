@@ -79,15 +79,15 @@ int bfs() {
 							node -> color = 1;
 					}
 					else {
-						flow = node -> weight[u -> id] - node -> currFlow[u -> id];
+						flow = u -> weight[i] - u -> currFlow[i];
 						while(node != s) {
-							flow = min(flow, node -> weight[node -> parent] - node -> currFlow[node -> parent]);
+							flow = min(flow, node -> daddy -> weight[getChildId(node -> daddy, node)] - node -> daddy -> currFlow[getChildId(node -> daddy, node)]);
 							node = node -> daddy;
 						}
 						node = t;
 						totalFlow += flow;
 						while(node != s) {
-							node -> currFlow[node -> parent] += flow;
+							node -> weight[node -> parent] += flow;
 							node -> daddy -> currFlow[getChildId(node -> daddy, node)] += flow;
 							node = node -> daddy;
 						}
@@ -105,34 +105,29 @@ int bfs() {
 	return totalFlow;
 }
 
-void getCut(Node *node) {
+void getCut() {
 	Node *temp;
-	int i, size = 4;
-	if(node == s)
-		size = m * n;
-	for(i = 0; i < size; i++)
-		if ((temp = node -> connections[i]) != NULL && node -> weight[i] != node -> currFlow[i] && temp -> color != 2) {
-			temp -> color = 2;
-			temp -> type = 0;
-			getCut(temp);
+	Node *u;
+	int i, size;
+	while(QAux -> size()) {
+		u = QAux -> front();
+		QAux -> pop();
+		if(u == s)
+			size = m * n;
+		else 
+			size = 4;
+		for(i = 0; i < size; i++) {
+			if ((temp = u -> connections[i]) != NULL && u -> weight[i] != u -> currFlow[i] && temp -> color != 2) {
+				temp -> color = 2;
+				temp -> type = 0;
+				QAux -> push(temp);
+			}
 		}
-
+	}
 }
 
 void edmundo() {
-	int currentFlow = 0, i;
-	for(i = 0; i < m * n; i++)
-		if(s -> connections[i] != NULL) {
-			if(s -> weight[i] > nodes -> at(i / n) -> at(i % n) -> weight[4]) {
-				s -> currFlow[i] += nodes -> at(i / n) -> at(i % n) -> weight[4];
-				nodes -> at(i / n) -> at(i % n) -> currFlow[4] =nodes -> at(i / n) -> at(i % n) -> weight[4];
-			}
-			else if (s -> weight[i] < nodes -> at(i / n) -> at(i % n) -> weight[4]){
-				nodes -> at(i / n) -> at(i % n) -> currFlow[4] += s -> weight[i];
-				s -> currFlow[i] = s -> weight[i];
-			}
-		}
-
+	int currentFlow = 0;
 	while(true) {
 		*Q = *QAux;
 		currentFlow = bfs();
@@ -143,7 +138,7 @@ void edmundo() {
 
 int main() {
 	int i = 0, j = 0, k = 0, temp = 0, type0c = 0, type0p = 0, totalCP = 0, totalLP = 0;
-	char letra = 'C';
+	string letra = "C ", str = "";
 	scanf("%d %d\n", &m, &n);
 	if (m < 1 || n < 1) {
 		printf("m and n must be greater than 1\n");
@@ -220,6 +215,10 @@ int main() {
 			nodes -> at(i) -> at(j) -> weight[4] = temp;
 			t -> weight[i * n + j] = temp;
 			totalCP += temp;
+			s -> currFlow[i * n + j] += min(temp, nodes -> at(i) -> at(j) -> lp);
+			t -> currFlow[i * n + j] += min(temp, nodes -> at(i) -> at(j) -> lp);
+			nodes -> at(i) -> at(j) -> currFlow[4] += min(temp, nodes -> at(i) -> at(j) -> lp);
+			nodes -> at(i) -> at(j) -> currFlow[5] += min(temp, nodes -> at(i) -> at(j) -> lp);
 		}
 
 	for (i = 0; i < m; i++)
@@ -240,7 +239,7 @@ int main() {
 			nodes -> at(i + 1) -> at(j) -> connections[2] = nodes -> at(i) -> at(j); 
 		}
 	edmundo();
-	getCut(s);
+	getCut();
 	for (i = 0; i < m; i++)
 		for(j = 0; j < n; j++) {
 			if (nodes -> at(i) -> at(j) -> type == 0) {
@@ -258,21 +257,22 @@ int main() {
 		    for(j = 0; j < n; j++){
 	    	    Node* node = nodes -> at(i) -> at(j);
 		    	if(node -> type == 1 && type0c < type0p)
-			    	printf("P ");
+			    	str += "P ";
 		   		else
-			    	printf("C ");
+			    	str += "C ";
 	    	}
-	    	printf("\n");
+	    	str += "\n";
 		}
 	}
 	else {
-		if (totalLP < totalCP)
-			letra = 'P';
+		if (totalLP <= totalCP)
+			letra = "P ";
 		for(i = 0; i < m; i++){
 		    for(j = 0; j < n; j++)
-		    	printf("%c ", letra);
-	    	printf("\n");
+		    	str += letra;
+	    str += "\n"; 
 		}
 	}
+	printf("%s", str.c_str());
 	return 0;
 }
